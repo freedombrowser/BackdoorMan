@@ -18,13 +18,12 @@ public class VNCHostServer {
             String command_args = "-run";
 
             System.out.println("[VNCHostServer] [Debug] VNC Command: " + command);
-            // Use ProcessBuilder to start the VNC server
+
+            // Processbuilder actually has aids wtf
             ProcessBuilder processBuilder = new ProcessBuilder(command, command_args);
 
-            // Set the working directory to the JAR file's directory
             processBuilder.directory(new File(jarDirectory));
 
-            // Start the process
             process = processBuilder.start();
 
             // Wait for the process to complete (optional)
@@ -33,19 +32,12 @@ public class VNCHostServer {
 
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            // Ensure that the external program is terminated before exiting
-            if (process != null) {
-                process.destroy();
-            }
         }
     }
 
     private static String getJarDirectory() throws URISyntaxException {
-        // Get the location of the JAR file
         String jarPath = VNCHostServer.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 
-        // Extract the directory from the JAR file path
         return new File(jarPath).getParent();
     }
 }
