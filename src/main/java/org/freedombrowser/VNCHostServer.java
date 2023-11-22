@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import static org.freedombrowser.MainProcess.getJarDirectory;
+
 public class VNCHostServer {
 
     public static void main(String[] args) {
@@ -35,10 +37,6 @@ public class VNCHostServer {
         }
     }
 
-    private static String getJarDirectory() throws URISyntaxException {
-        String jarPath = VNCHostServer.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 
-        return new File(jarPath).getParent();
-    }
 }
 

